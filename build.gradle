@@ -47,3 +47,7 @@ processResources {
         expand props
     }
 }
+
+task copyjar(type:Copy) {
+    copy{from "build/libs/SurvivalPlus-1.0-SNAPSHOT.jar" into "C:\\Users\\desme\\Desktop\\ServeurDev\\plugins"}
+}

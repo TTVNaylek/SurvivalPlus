@@ -1,4 +1,4 @@
 name: SurvivalPlus
 version: '1.0-SNAPSHOT'
-main: fr.naylek.survivalPlus.SurvivalPlus
+main: fr.naylek.survivalplus.SurvivalPlus
 api-version: '1.21'
