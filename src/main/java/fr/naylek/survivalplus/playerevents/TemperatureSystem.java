@@ -1,5 +1,6 @@
 package fr.naylek.survivalplus.playerevents;
 
+import fr.naylek.survivalplus.SurvivalPlus;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
@@ -39,6 +40,8 @@ public class TemperatureSystem implements Listener {
             Biome.FROZEN_PEAKS,
             Biome.JAGGED_PEAKS
     };
+    private Plugin instance = SurvivalPlus.getInstance();
+    private DrinkSystem playerWater = new DrinkSystem(instance);
 
     // Constructeur
     public TemperatureSystem(Plugin p) {
@@ -47,16 +50,18 @@ public class TemperatureSystem implements Listener {
             // PlayerBiomeEntry va retourner le joueur + biome
             for (Map.Entry<Player, Biome> playerBiomeEntry : lastBiome.entrySet()) {
                 Player player = playerBiomeEntry.getKey();
-
                 // Récupère le biome actuel du joueur
                 Biome currentBiome = player.getWorld().getBiome((int) player.getLocation().getX(),
                         (int) player.getLocation().getY(),
                         (int) player.getLocation().getZ());
-
                 //p.getLogger().info(String.valueOf(!hasLeatherArmor(player.getInventory())));
                 // Applique les effets au joueur
                 if (Arrays.asList(HOT).contains(currentBiome) && !hasGoldArmor(player.getInventory())){
                     player.damage(0.25);
+
+                    playerWater.consumeWater(0.25);
+
+                    player.sendMessage("Water consumed :  0.25");
                 } else if (Arrays.asList(COLD).contains(currentBiome) && !hasLeatherArmor(player.getInventory())) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 120,0));
                     player.setFreezeTicks(80);
