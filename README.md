@@ -7,6 +7,8 @@ In reality, I made this plugin to learn Java with the Spigot API. I would like t
 ## Improvements
 
 Temperature System:
+
+When you enter in a biome a message is sent to inform you.
  
 - HOT Biomes:
     -When you are in hot biomes, you will take 0.25 damage every 5 seconds
