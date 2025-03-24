@@ -1,15 +1,15 @@
 # SuvivalPlus
 
-SurvivalPlus is a Java plugin to improve the vanilla
+SurvivalPlus is a Java plugin to improve the vanilla.
 
-In reality, i made this plugin to learn Java with the Spigot API. I would like to be a better devlopper to make huge things later.
+In reality, I made this plugin to learn Java with the Spigot API. I would like to be a better developer to make huge things later.
 
 ## Improvements
 
 Temperature System:
  
 - HOT Biomes:
-    - When you are in hot biomes, you will take 0.25 damages every 5 secondes
+    -When you are in hot biomes, you will take 0.25 damage every 5 seconds
     - (WIP) You will be dehydrated and need to drink water
 - COLD Biomes:
     - When you are in cold biomes, you will be slowed
