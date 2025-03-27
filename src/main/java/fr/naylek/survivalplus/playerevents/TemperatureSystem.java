@@ -1,7 +1,6 @@
 package fr.naylek.survivalplus.playerevents;
 
 import fr.naylek.survivalplus.SurvivalPlus;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
@@ -17,7 +16,7 @@ import java.util.*;
 
 
 public class TemperatureSystem implements Listener {
-    private Map<Player, Biome> lastBiome = new HashMap<>();
+    private final Map<Player, Biome> lastBiome = new HashMap<>();
     private static final Biome[] HOT = {
             Biome.DESERT,
             Biome.NETHER_WASTES,
@@ -42,15 +41,11 @@ public class TemperatureSystem implements Listener {
             Biome.JAGGED_PEAKS
     };
     final Plugin instance = SurvivalPlus.getInstance();
-    //private DrinkSystem playerWater = new DrinkSystem();
-
     private final DrinkSystem playerWater;
 
     // Constructeur
     public TemperatureSystem(DrinkSystem drinkSystem) {
-
         this.playerWater = drinkSystem;
-
         // Tâche automatique qui va attribuer des effets au joueur
         instance.getServer().getScheduler().runTaskTimer(instance, () -> {
             // PlayerBiomeEntry va retourner le joueur + biome
@@ -63,10 +58,7 @@ public class TemperatureSystem implements Listener {
                 // Applique les effets au joueur
                 if (Arrays.asList(HOT).contains(currentBiome) && !hasGoldArmor(player.getInventory())){
                     player.damage(0.25);
-
-                    playerWater.consumeWater(0.25);
-
-                    player.sendMessage(ChatColor.RED + "Water consumed :  0.25");
+                    playerWater.consumeWater(player, 0.25);
                 } else if (Arrays.asList(COLD).contains(currentBiome) && !hasLeatherArmor(player.getInventory())) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 120,0));
                     player.setFreezeTicks(80);
@@ -76,14 +68,12 @@ public class TemperatureSystem implements Listener {
     }
 
     @EventHandler
-    public void playerChangedBiome(PlayerMoveEvent event){
-        Player player = event.getPlayer();
-
+    public void playerChangedBiome(PlayerMoveEvent pme){
+        Player player = pme.getPlayer();
         // Dis au joueur dans quel biome il se trouve
         Biome currentBiome = player.getWorld().getBiome((int) player.getLocation().getX(),
                 (int) player.getLocation().getY(),
                 (int) player.getLocation().getZ());
-
         // Si le joueur n'est pas dans le meme biome
         if (lastBiome.get(player) != currentBiome){
             player.sendMessage("You are in " + currentBiome + " biome");
@@ -98,9 +88,9 @@ public class TemperatureSystem implements Listener {
         }
     }
 
-    private boolean hasLeatherArmor(PlayerInventory inventory){
+    private boolean hasLeatherArmor(PlayerInventory pi){
         // Retourne le nb de pièce de cuire
-        return Arrays.stream(inventory.getArmorContents())
+        return Arrays.stream(pi.getArmorContents())
                 .filter(Objects::nonNull)
                 // Récupère le type des pièces d'armure (cuire, fer etc)
                 .map(ItemStack::getType)
@@ -114,9 +104,9 @@ public class TemperatureSystem implements Listener {
         return material.toString().startsWith("LEATHER_");
     }
 
-    private boolean hasGoldArmor(PlayerInventory inventory){
+    private boolean hasGoldArmor(PlayerInventory pi){
         // Retourne le nb de pièce de cuire
-        return Arrays.stream(inventory.getArmorContents())
+        return Arrays.stream(pi.getArmorContents())
                 .filter(Objects::nonNull)
                 // Récupère le type des pièces d'armure (cuire, fer etc)
                 .map(ItemStack::getType)
