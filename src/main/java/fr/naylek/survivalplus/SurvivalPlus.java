@@ -9,14 +9,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class SurvivalPlus extends JavaPlugin {
     private static SurvivalPlus instance;
 
+    private DrinkSystem drinkSystem;
+    private TemperatureSystem temperatureSystem;
+
     @Override
     public void onEnable() {
         // Définit le plugin
         instance = this;
+
+        drinkSystem = new DrinkSystem(); // Initialisation unique
+        temperatureSystem = new TemperatureSystem(drinkSystem); // Passe cette instance
+
+
         // Plugin startup logic
         getLogger().info("Plugin is enabled.");
         registerEvents();
-
     }
 
     @Override
@@ -27,8 +34,10 @@ public final class SurvivalPlus extends JavaPlugin {
 
     public void registerEvents() {
         PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new TemperatureSystem(this), this);
-        pm.registerEvents(new DrinkSystem(this), this);
+        //pm.registerEvents(new TemperatureSystem(), this);
+        //pm.registerEvents(new DrinkSystem(), this);
+        pm.registerEvents(temperatureSystem, this);
+        pm.registerEvents(drinkSystem, this);
     }
 
     public static SurvivalPlus getInstance() {
