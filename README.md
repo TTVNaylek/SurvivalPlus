@@ -30,7 +30,7 @@ Drink System:
 - Effects:
     - No water ? You'll have nausea :)
 
-* After a certain moment, like the food bar in the game
+*After a certain moment, like the food bar in the game
 
 (WIP):
 - Fatigue system
