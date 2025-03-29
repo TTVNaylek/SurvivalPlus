@@ -1,6 +1,7 @@
 package fr.naylek.survivalplus.playerevents;
 
 import fr.naylek.survivalplus.SurvivalPlus;
+import fr.naylek.survivalplus.managers.PlayerStatusManager;
 import fr.naylek.survivalplus.objects.PlayerStatus;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -19,13 +20,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class DrinkSystem implements Listener {
-    private final Map<UUID, PlayerStatus> playerStatus = new HashMap<>();
-    private double playerReserve;
+    final SurvivalPlus instance = SurvivalPlus.getInstance();
+    private final PlayerStatusManager playerStatusManager = instance.getPlayerStatusManager();
 
     /**
      * When the class is instanced the server will create an action bar for the water reserve of the player
@@ -34,32 +34,22 @@ public class DrinkSystem implements Listener {
     public DrinkSystem(){
         Plugin instance = SurvivalPlus.getInstance();
         instance.getServer().getScheduler().runTaskTimer(instance, () -> {
-            for (Map.Entry<UUID, PlayerStatus> playerDoubleEntry : playerStatus.entrySet()) {
-                Player player = Bukkit.getPlayer(playerDoubleEntry.getKey());
+            for (Map.Entry<UUID, PlayerStatus> playerStatusEntry : playerStatusManager.getPlayerStatusMap().entrySet()) {
+                Player player = Bukkit.getPlayer(playerStatusEntry.getKey());
                 if (player != null){
+                    // Affiche la bar d'energie du joueur
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                             TextComponent.fromLegacy("Water: " + getPercentString(player)));
-                    if (playerStatus.get(player.getUniqueId()).getPlayerWaterReserve() == 0){
+                    if (playerStatusEntry.getValue().getPlayerWaterReserve() == 0){
                         player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 120,0));
                     }
                 }
             }
-        }, 0, 20);
+        }, 0, 1);
     }
 
     /**
-     * When the player join the server a player status is created with his UUID
-     * @param pje The player from the PlayerJoinEvent event
-     */
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent pje){
-        if (!playerStatus.containsKey(pje.getPlayer().getUniqueId())){
-            playerStatus.put(pje.getPlayer().getUniqueId(), new PlayerStatus());
-        }
-    }
-
-    /**
-     * While the player is Sprinting/Swimming his exhaust coef increase, at certain value exhaust coef make player loose water
+     * While the player is Sprinting/Swimming his water consume coef increase, at certain value water consume coef make player loose water
      * @param pme The player from the PlayerMoveEvent event
      */
     @EventHandler
@@ -73,7 +63,7 @@ public class DrinkSystem implements Listener {
     }
 
     /**
-     * When the player break a block his exhaust coef increase, at certain value exhaust coef make player loose water
+     * When the player break a block his water consume coef  increase, at certain value water consume coef make player loose water
      * @param bbe The player from the BlockBreakEvent event
      */
     @EventHandler
@@ -87,7 +77,6 @@ public class DrinkSystem implements Listener {
      */
     @EventHandler
     public void onPlayerDrinkWater(PlayerItemConsumeEvent pice){
-        Player player;
         ItemStack is = pice.getItem();
         // Vérifie si c'est bien une potion
         if (is.getType().equals(Material.POTION)){
@@ -95,16 +84,13 @@ public class DrinkSystem implements Listener {
             PotionMeta pMeta = (PotionMeta) is.getItemMeta();
             if (pMeta != null && pMeta.getBasePotionType() == PotionType.WATER){
                 // Ajouter eau au joueur
-                for (Map.Entry<UUID, PlayerStatus> playerDoubleEntry : playerStatus.entrySet()) {
-                    player = Bukkit.getPlayer(playerDoubleEntry.getKey());
-                    if (player != null){
-                        playerReserve = playerStatus.get(player.getUniqueId()).getPlayerWaterReserve();
-                        if (playerReserve + 2 >= 20){
-                            playerStatus.get(player.getUniqueId()).setPlayerWaterReserve(20D);
-                            break;
-                        }
-                        playerStatus.get(player.getUniqueId()).setPlayerWaterReserve(playerReserve + 2);
+                for (Map.Entry<UUID, PlayerStatus> playerDoubleEntry : playerStatusManager.getPlayerStatusMap().entrySet()) {
+                    double playerReserve = playerDoubleEntry.getValue().getPlayerWaterReserve();
+                    if (playerReserve + 2 >= 20){
+                        playerDoubleEntry.getValue().setPlayerWaterReserve(20D);
+                        break;
                     }
+                    playerDoubleEntry.getValue().setPlayerWaterReserve(playerReserve + 2);
                 }
             }
         }
@@ -117,7 +103,7 @@ public class DrinkSystem implements Listener {
      * @param coef The exhaust level to make player loose water
      */
     private void exhaustProcess(Player player, double consumption, double coef){
-        PlayerStatus status = playerStatus.get(player.getUniqueId());
+        PlayerStatus status = playerStatusManager.getPlayerStatus(player);
         status.incrementConsumeWaterCoef(coef);
         // Si le coef est supérieur à 4 (Comme la nourriture du jeu) alors consommer l'eau
             if (status.getPlayerConsumeWaterCoef() > 4){
@@ -132,12 +118,14 @@ public class DrinkSystem implements Listener {
      * @param consumption The consumption level 0-20
      */
     public void consumeWater(Player player, double consumption){
+        PlayerStatus status = playerStatusManager.getPlayerStatus(player);
+        double playerReserve = status.getPlayerWaterReserve();
+
         // Soustraire X à la valeur initiale
-        playerReserve = playerStatus.get(player.getUniqueId()).getPlayerWaterReserve();
         if (playerReserve - consumption <= 0){
-            playerStatus.get(player.getUniqueId()).setPlayerWaterReserve(0D);
+            status.setPlayerWaterReserve(0D);
         }else {
-            playerStatus.get(player.getUniqueId()).setPlayerWaterReserve(playerReserve - consumption);
+            status.setPlayerWaterReserve(playerReserve - consumption);
         }
     }
 
@@ -157,7 +145,7 @@ public class DrinkSystem implements Listener {
      */
     private String getPercentString(Player player){
         String waterBar = ChatColor.GREEN + "█";
-        return waterBar.repeat(((int) getPercent(playerStatus.get(player.getUniqueId()).getPlayerWaterReserve())) / 10);
+        return waterBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerWaterReserve())) / 10);
     }
 
 }
