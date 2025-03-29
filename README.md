@@ -8,11 +8,11 @@ In reality, I made this plugin to learn Java with the Spigot API. I would like t
 
 Temperature System:
 
-When you enter in a biome a message is sent to inform you.
+REMOVED: When you enter in a biome a message is sent to inform you.
  
 - HOT Biomes:
-    -When you are in hot biomes, you will take 0.25 damage every 5 seconds
-    - (WIP) You will be dehydrated and need to drink water
+    - When you are in hot biomes, you will take 0.25 damage every 5 seconds
+    - You will be dehydrated and need to drink water
 - COLD Biomes:
     - When you are in cold biomes, you will be slowed
     - An effect of frozen is applied to the player for immersive gameplay
@@ -20,6 +20,17 @@ When you enter in a biome a message is sent to inform you.
     - If you wear at least 2 pieces of **GOLDEN** armor, you were protected from the heat
     - If you wear at least 2 pieces of **LEATHER** armor, you were protected from the cold
 
+Drink System:
+- Places:
+    - If you're walking in hot biomes don't forget to drink !
+- Actions:
+    - When you sprint you'll need to drink*
+    - When you swin you'll need to drink*
+    - When you break a block you'll need to drink*
+- Effects:
+    - No water ? You'll have nausea :)
+
+*After a certain moment, like the food bar in the game
 
 (WIP):
 - Fatigue system
