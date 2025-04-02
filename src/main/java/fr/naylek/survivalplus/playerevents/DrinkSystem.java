@@ -3,10 +3,6 @@ package fr.naylek.survivalplus.playerevents;
 import fr.naylek.survivalplus.SurvivalPlus;
 import fr.naylek.survivalplus.managers.PlayerStatusManager;
 import fr.naylek.survivalplus.objects.PlayerStatus;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,9 +11,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 import java.util.Map;
@@ -26,27 +19,6 @@ import java.util.UUID;
 public class DrinkSystem implements Listener {
     final SurvivalPlus instance = SurvivalPlus.getInstance();
     private final PlayerStatusManager playerStatusManager = instance.getPlayerStatusManager();
-
-    /**
-     * When the class is instanced the server will create an action bar for the water reserve of the player
-     * and refresh it every second
-     */
-    public DrinkSystem(){
-        Plugin instance = SurvivalPlus.getInstance();
-        instance.getServer().getScheduler().runTaskTimer(instance, () -> {
-            for (Map.Entry<UUID, PlayerStatus> playerStatusEntry : playerStatusManager.getPlayerStatusMap().entrySet()) {
-                Player player = Bukkit.getPlayer(playerStatusEntry.getKey());
-                if (player != null){
-                    // Affiche la bar d'energie du joueur
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                            TextComponent.fromLegacy("Water: " + getPercentString(player)));
-                    if (playerStatusEntry.getValue().getPlayerWaterReserve() == 0){
-                        player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 120,0));
-                    }
-                }
-            }
-        }, 0, 1);
-    }
 
     /**
      * While the player is Sprinting/Swimming his water consume coef increase, at certain value water consume coef make player loose water
@@ -127,25 +99,6 @@ public class DrinkSystem implements Listener {
         }else {
             status.setPlayerWaterReserve(playerReserve - consumption);
         }
-    }
-
-    /**
-     * Calcul the percentage of a current player's water reserve
-     * @param waterReserve The player's water reserve
-     * @return The percentage of the player's water reserve
-     */
-    private double getPercent(double waterReserve){
-        return Math.round(((100 * waterReserve) / 20));
-    }
-
-    /**
-     * Permit to draw the water level of the player
-     * @param player The player to obtain its reserve
-     * @return The level of water reserve as string to print
-     */
-    private String getPercentString(Player player){
-        String waterBar = ChatColor.GREEN + "█";
-        return waterBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerWaterReserve())) / 10);
     }
 
 }

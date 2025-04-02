@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 public class PlayerStatus {
     private double playerWaterReserve = 20D;
     private double playerConsumeWaterCoef = 0D;
-    private double playerEnergy = 20D;
+    private double playerEnergyReserve = 20D;
     private double playerExhaustCoef = 0D;
 
     public double getPlayerWaterReserve() {
@@ -34,12 +34,12 @@ public class PlayerStatus {
         return playerExhaustCoef;
     }
 
-    public double getPlayerEnergy() {
-        return playerEnergy;
+    public double getPlayerEnergyReserve() {
+        return playerEnergyReserve;
     }
 
-    public void setPlayerEnergy(double playerEnergy) {
-        this.playerEnergy = playerEnergy;
+    public void setPlayerEnergyReserve(double playerEnergyReserve) {
+        this.playerEnergyReserve = playerEnergyReserve;
     }
 
     public void setPlayerExhaustCoef(double playerExhaustCoef) {
@@ -64,9 +64,19 @@ public class PlayerStatus {
      * @param player The player to obtain its reserve
      * @return The level of energy as string to print
      */
-    public String getPercentString(PlayerStatusManager playerStatusManager, Player player, ChatColor color){
+    public String getEnergyPercentString(PlayerStatusManager playerStatusManager, Player player, ChatColor color){
         String energyBar = color + "█";
-        return energyBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerEnergy())) / 10);
+        return energyBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerEnergyReserve())) / 10);
+    }
+
+    /**
+     * Permit to draw the water level of the player
+     * @param player The player to obtain its reserve
+     * @return The level of water as string to print
+     */
+    public String getWaterPercentString(PlayerStatusManager playerStatusManager, Player player, ChatColor color){
+        String energyBar = color + "█";
+        return energyBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerWaterReserve())) / 10);
     }
 
 }

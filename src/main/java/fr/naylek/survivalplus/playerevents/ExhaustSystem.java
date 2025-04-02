@@ -3,8 +3,6 @@ package fr.naylek.survivalplus.playerevents;
 import fr.naylek.survivalplus.SurvivalPlus;
 import fr.naylek.survivalplus.managers.PlayerStatusManager;
 import fr.naylek.survivalplus.objects.PlayerStatus;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -13,41 +11,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
-import java.util.Map;
-import java.util.UUID;
 
 public class ExhaustSystem implements Listener {
     final SurvivalPlus instance = SurvivalPlus.getInstance();
     private final PlayerStatusManager playerStatusManager = instance.getPlayerStatusManager();
-
-    public ExhaustSystem(){
-        Plugin instance = SurvivalPlus.getInstance();
-        instance.getServer().getScheduler().runTaskTimer(instance, () -> {
-            for (Map.Entry<UUID, PlayerStatus> playerStatusEntry : playerStatusManager.getPlayerStatusMap().entrySet()) {
-                Player player = Bukkit.getPlayer(playerStatusEntry.getKey());
-                if (player != null){
-                    PlayerStatus status = playerStatusManager.getPlayerStatus(player);
-                    // Affiche la bar d'energie du joueur
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                            TextComponent.fromLegacy("Energy: " + getPercentString(player)));
-
-                            // A verifier
-                            TextComponent.fromLegacy("Energy: " + status.getPercentString(playerStatusManager, player, ChatColor.YELLOW));
-
-
-                    // Effets si son énergie est à 0
-                    if (playerStatusEntry.getValue().getPlayerWaterReserve() == 0){
-                        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 120,0));
-                        player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 1.0f);
-                    }
-                }
-            }
-        }, 0, 1);
-    }
 
     /**
      * When the player interact with bed he can sleep if he's tired
@@ -59,12 +26,12 @@ public class ExhaustSystem implements Listener {
         if (block == null || !block.getType().toString().endsWith("_BED")){
             return;
         }
-        if (playerStatusManager.getPlayerStatus(pie.getPlayer()).getPlayerEnergy() > 5){
+        if (playerStatusManager.getPlayerStatus(pie.getPlayer()).getPlayerEnergyReserve() > 5){
             pie.getPlayer().sendMessage("You are not tired");
             pie.getPlayer().playSound(pie.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f);
             return;
         }
-
+        // Faire en sorte qu'il reste dans le lit
         pie.getPlayer().sleep(pie.getClickedBlock().getLocation(), true);
     }
 
@@ -115,30 +82,11 @@ public class ExhaustSystem implements Listener {
     public void consumeEnergy(Player player, double consumption){
         PlayerStatus playerStatus = playerStatusManager.getPlayerStatus(player);
         // Soustraire X à la valeur initiale
-        double playerEnergy = playerStatus.getPlayerEnergy();
+        double playerEnergy = playerStatus.getPlayerEnergyReserve();
         if (playerEnergy - consumption <= 0){
-            playerStatus.setPlayerEnergy(0);
+            playerStatus.setPlayerEnergyReserve(0);
         }else {
-            playerStatus.setPlayerEnergy(playerEnergy - consumption);
+            playerStatus.setPlayerEnergyReserve(playerEnergy - consumption);
         }
-    }
-
-    /**
-     * Calcul the percentage of a current player's energy reserve
-     * @param energyReserve The player's energy reserve
-     * @return The percentage of the player's energy reserve
-     */
-    private double getPercent(double energyReserve){
-        return Math.round(((100 * energyReserve) / 20));
-    }
-
-    /**
-     * Permit to draw the energy level of the player
-     * @param player The player to obtain its reserve
-     * @return The level of energy as string to print
-     */
-    private String getPercentString(Player player){
-        String energyBar = ChatColor.YELLOW + "█";
-        return energyBar.repeat(((int) getPercent(playerStatusManager.getPlayerStatus(player).getPlayerEnergy())) / 10);
     }
 }
